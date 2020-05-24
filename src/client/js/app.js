@@ -1,99 +1,83 @@
-export { getWeatherData, weatherEventListener }
+export { planTrip, planTripEventListener }
 /* Global Variables */
-const openWeatherKey = "&appid=3f44a3471a1449b054d69af2b59fef2d&units=metric"
-const openWeatherURL = 'https://api.openweathermap.org/data/2.5/weather?'; //zip={zip code},{country code}&appid={your api key}'
 
-// Create a new date instance dynamically with JS
-let d = new Date();
-let newDate = d.toDateString(); //d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
+// Geonames API for locations
+const geonamesURL = "http://api.geonames.org/searchJSON?q="
+const geonamesUsername = 'brleinad'
 
-const weatherEventListener = document.getElementById('generate').addEventListener('click', getWeatherData);
+// Weatherbit API for weather
+const weatherKey = "8309742ba4fb4c2fa1ff74688b5753d5"
+const currentWeatherURL = "https://api.weatherbit.io/v2.0/current"
+const forecastWeatherURL = "https://api.weatherbit.io/v2.0/forecast/daily"
 
-/*
- * When the zip code is given by the user use the Open Weather API to get weather info.
- * */
-function getWeatherData(event) {
-   const zipCode = document.getElementById('zip').value;
-   const entry = document.getElementById('feelings').value;
-   getFromAPI(openWeatherURL, zipCode, openWeatherKey)
-   .then(function(data) {
-      data['entry'] = entry;
-      data['date'] = newDate;
-      console.log('Going to POST:', data);
-      postWeatherData('/post', data);
-      updateUI();
-   })
-}  
+// Pixabay API
+const pixabayKey = "16692838-c3c834a543c15f798a406e982"
+const pixabayURL = "https://pixabay.com/api/"
 
 /*
- * Do a simple GET request to an API given the baseurl, zipcode info and key.
- * @param {String} baseURL - the API's base url for GET requests.
- * @param {String} zipCode - A zip code to use to get the weather info.
- * @param (String) key - The key to use the API.
- * */
-async function getFromAPI(baseURL, zipCode, key) {
-   const response = await fetch(`${baseURL}zip=${zipCode},us${key}`);
-   try{
-      const tmpData = await response.json();
-      const data = {};
-      data['temperature'] = tmpData.main.temp;
-      //console.log(tmpData);
-      console.log(data);
-      return data;
-   }catch(error) {
-      console.log('ERROR: ', error);
-   }
+* Get Location from geonames API(latitude, longitude) given a city. 
+*/
+async function getLocation(city) {
+    const maxRows = 1
+    const res = await fetch(`${geonamesURL}${city}&maxRows=${maxRows}&username=${geonamesUsername}`)
+
+    try {
+        const data = await res.json()
+        const location =  {lat: data.geonames[0].lat, lng: data.geonames[0].lng}
+        console.log('Response: ', data)
+        console.log('Location: ', location)
+        return location
+    }catch(error) {
+        console.log('ERROR: ', error)
+    }
 }
 
 /*
- * Post weather data to the server.
- * @param {Object} weatherData - the weather data.
- * */
-async function postWeatherData(url = '', data = {}) {
-   console.log('POST to server with', data);
-   const response = await fetch(url, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
-   });
-   try {
-      const tmpData = await response.json();
-      let newData = {};
-      newData['temperature'] = tmpData.temperature;
-      newData['date'] = tmpData.temperature;
-      newData['entry'] = tmpData.userReponse;
-      console.log('Response data', newData);
-   }catch(error) {
-      console.log('ERROR', error);
-   }
+* Get weather given a location (latitude, longitude)
+*/
+async function getWeather(location) {
+
+    //https://api.weatherbit.io/v2.0/current?city=Raleigh,NC&key=API_KEY
+    const baseURL = currentWeatherURL
+
+    const res = await fetch(`${baseURL}?&lat=${location.lat}&lon=${location.lng}&key=${weatherKey}`)
+    try {
+        const data = await res.json()
+        const weather = {
+            temp: data.data[0].temp,
+            description: data.data[0].weather.description
+        }
+        console.log('Weather: ', weather)
+        return weather
+    }catch(error) {
+        console.log('ERROR: ', error)
+    }
 }
 
 /*
- * Update the HTML with the latest data in the server.
- * */
-async function updateUI() {
-   const request = await fetch('/get');
-   try {
-      const lastData = await request.json();
-      console.log('Updating UI with', lastData);
-      document.getElementById('temp').innerHTML = 'Temperature: ' + lastData.temperature + 'C';
-      document.getElementById('date').innerHTML = 'Date: ' + lastData.date;
-      document.getElementById('content').innerHTML = 'Entry: ' + lastData.entry;
+* Update the UI
+*/
+function updateUI(city, weather) {
+    const results = {
+        city: document.getElementById('results-city'),
+        weather: document.getElementById('results-weather')
+    }
 
-   }catch(error) {
-      console.log('ERROR:', error);
-   }
-
+    console.log('Updating UI')
+    results.city.textContent = city
+    results.weather.textContent = `${weather.temp}C and ${weather.description}`
 }
 
 /*
- * NOTE: Note needed anymore but leaving it for future reference.
- * Convert from Kelvin to degrees Celsius
- * @param {Number} temp - the temperature in Kelvin.
- * */
-function kelvinInCelsius(temp) {
-   return Math.round(temp - 273.15);
+* Get all the info from all the APIs
+*/
+async function planTrip() {
+    const city = document.getElementById('city').value
+    const location = await getLocation(city)
+    const weather = await getWeather(location)
+
+    updateUI(city, weather)
 }
+
+
+const planTripEventListener = document.getElementById('go').addEventListener('click', planTrip)
