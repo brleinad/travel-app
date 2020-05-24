@@ -1,3 +1,7 @@
+/*
+* TODO:
+* 
+*/
 export { planTrip, planTripEventListener }
 /* Global Variables */
 
@@ -33,12 +37,27 @@ async function getLocation(city) {
 }
 
 /*
+* Check if the given date is a week from today or more
+*/
+function isFutureDate(date) {
+    const today = new Date() 
+    const aDay = 24 * 60 * 60 * 1000 //miliseconds in a day
+    const aWeek = 7 
+    const dayDiff = (date-today)/aDay
+    console.log('FUTURE: ', dayDiff)
+
+    return (dayDiff > aWeek)
+}
+
+/*
 * Get weather given a location (latitude, longitude)
 */
-async function getWeather(location) {
+async function getWeather(location, date) {
 
-    //https://api.weatherbit.io/v2.0/current?city=Raleigh,NC&key=API_KEY
-    const baseURL = currentWeatherURL
+    let baseURL = currentWeatherURL
+    if (isFutureDate(date)) {
+        baseURL = forecastWeatherURL
+    }
 
     const res = await fetch(`${baseURL}?&lat=${location.lat}&lon=${location.lng}&key=${weatherKey}`)
     try {
@@ -58,9 +77,7 @@ async function getWeather(location) {
 * Get a picture given a city using the Pixabay API
 */
 async function getPictureURL(city) {
-    //https://pixabay.com/api/?key=&q=yellow+flowers&image_type=photo&pretty=true
-    const proxyURL = '' //'https://cors-anywhere.herokuapp.com/'
-    const res = await fetch(`${proxyURL}${pixabayURL}?key=${pixabayKey}&q=${city}&image_type=photo`)
+    const res = await fetch(`${pixabayURL}?key=${pixabayKey}&q=${city}&image_type=photo`)
 
     try {
         const data = await res.json()
@@ -75,18 +92,20 @@ async function getPictureURL(city) {
 /*
 * Update the UI
 */
-function updateUI(city, weather, picURL) {
+function updateUI(date, city, weather, picURL) {
     const results = {
+        date: document.getElementById('results-date'),
         city: document.getElementById('results-city'),
         weather: document.getElementById('results-weather'),
         pic: document.getElementById('results-picture')
     }
 
     console.log('Updating UI')
+    results.date.textContent = date.toDateString()
     results.city.textContent = city
     results.weather.textContent = `${weather.temp}C and ${weather.description}`
     results.pic.setAttribute('src', picURL)
-    //results.pic.style.background =  `url(${picURL})`
+    results.pic.setAttribute('alt', city)
 }
 
 /*
@@ -94,11 +113,13 @@ function updateUI(city, weather, picURL) {
 */
 async function planTrip() {
     const city = document.getElementById('city').value
+    const date = new Date(document.getElementById('date').value)
+    console.log('Date is: ', date.toDateString())
     const location = await getLocation(city)
-    const weather = await getWeather(location)
+    const weather = await getWeather(location, date)
     const picURL = await getPictureURL(city)
 
-    updateUI(city, weather, picURL)
+    updateUI(date, city, weather, picURL)
 }
 
 

@@ -43,6 +43,15 @@ body{
         background: $white;
         height: 100px;
         color: $primary-color;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: space-around;
+
+    }
+
+    #results-info {
+        background: $secondary-color;
     }
 }
 
