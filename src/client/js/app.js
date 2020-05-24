@@ -55,17 +55,38 @@ async function getWeather(location) {
 }
 
 /*
+* Get a picture given a city using the Pixabay API
+*/
+async function getPictureURL(city) {
+    //https://pixabay.com/api/?key=&q=yellow+flowers&image_type=photo&pretty=true
+    const proxyURL = '' //'https://cors-anywhere.herokuapp.com/'
+    const res = await fetch(`${proxyURL}${pixabayURL}?key=${pixabayKey}&q=${city}&image_type=photo`)
+
+    try {
+        const data = await res.json()
+        const picURL = data.hits[0].previewURL
+        console.log('Picture: ', picURL)
+        return picURL
+    }catch(error) {
+        console.log('ERROR: ', error)
+    }
+}
+
+/*
 * Update the UI
 */
-function updateUI(city, weather) {
+function updateUI(city, weather, picURL) {
     const results = {
         city: document.getElementById('results-city'),
-        weather: document.getElementById('results-weather')
+        weather: document.getElementById('results-weather'),
+        pic: document.getElementById('results-picture')
     }
 
     console.log('Updating UI')
     results.city.textContent = city
     results.weather.textContent = `${weather.temp}C and ${weather.description}`
+    results.pic.setAttribute('src', picURL)
+    //results.pic.style.background =  `url(${picURL})`
 }
 
 /*
@@ -75,8 +96,9 @@ async function planTrip() {
     const city = document.getElementById('city').value
     const location = await getLocation(city)
     const weather = await getWeather(location)
+    const picURL = await getPictureURL(city)
 
-    updateUI(city, weather)
+    updateUI(city, weather, picURL)
 }
 
 
