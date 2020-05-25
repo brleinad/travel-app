@@ -32,11 +32,10 @@ app.get('/get', (req, res) => {
 
 app.post('/post', (req, res) => {
    let data = {}
-   data['temperature'] = req.body.temperature;
+   data['city'] = req.body.city;
    data['date'] = req.body.date;
-   data['entry'] = req.body.entry;
    projectData = data;
-
+   res.send({sucess: true})
 });
 
 // Setup Server
@@ -44,3 +43,6 @@ const port = 3000;
 app.listen(port, () => {
    console.log(`Listening on port ${port}`);
 });
+
+
+//export { app }

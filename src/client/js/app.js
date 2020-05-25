@@ -123,4 +123,6 @@ async function planTrip() {
 }
 
 
-const planTripEventListener = document.getElementById('go').addEventListener('click', planTrip)
+const planTripEventListener = document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('go').addEventListener('click', planTrip)
+})
