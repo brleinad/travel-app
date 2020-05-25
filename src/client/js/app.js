@@ -24,6 +24,7 @@ const pixabayURL = "https://pixabay.com/api/"
 async function getLocation(city) {
     const maxRows = 1
     const res = await fetch(`${geonamesURL}${city}&maxRows=${maxRows}&username=${geonamesUsername}`)
+    console.log('City: ', city)
 
     try {
         const data = await res.json()
@@ -41,12 +42,19 @@ async function getLocation(city) {
 */
 function isFutureDate(date) {
     const today = new Date() 
-    const aDay = 24 * 60 * 60 * 1000 //miliseconds in a day
-    const aWeek = 7 
-    const dayDiff = (date-today)/aDay
+    const dayDiff = daysInDates(today, date)
     console.log('FUTURE: ', dayDiff)
+    const aWeek = 7 
 
     return (dayDiff > aWeek)
+}
+
+/*
+* Get the number of days there are between two given dates
+*/
+function daysInDates(startDate, endDate) {
+    const aDay = 24 * 60 * 60 * 1000 //miliseconds in a day
+    return Math.round((endDate-startDate)/aDay)
 }
 
 /*
@@ -92,20 +100,22 @@ async function getPictureURL(city) {
 /*
 * Update the UI
 */
-function updateUI(date, city, weather, picURL) {
+function updateUI(tripData) {
     const results = {
         date: document.getElementById('results-date'),
+        duration: document.getElementById('results-duration'),
         city: document.getElementById('results-city'),
         weather: document.getElementById('results-weather'),
         pic: document.getElementById('results-picture')
     }
 
     console.log('Updating UI')
-    results.date.textContent = date.toDateString()
-    results.city.textContent = city
-    results.weather.textContent = `${weather.temp}C and ${weather.description}`
-    results.pic.setAttribute('src', picURL)
-    results.pic.setAttribute('alt', city)
+    results.date.textContent = tripData.date.toDateString()
+    results.duration.textContent = `Your trip in ${tripData.city} will be ${tripData.duration} days long`
+    results.city.textContent = tripData.city
+    results.weather.textContent = `The weather will be ${tripData.weather.temp}C and ${tripData.weather.description}`
+    results.pic.setAttribute('src', tripData.picURL)
+    results.pic.setAttribute('alt', tripData.city)
 }
 
 /*
@@ -114,14 +124,16 @@ function updateUI(date, city, weather, picURL) {
 async function planTrip() {
     const tripData =  {
         city: document.getElementById('city').value,
-        date: new Date(document.getElementById('date').value)
+        date: new Date(document.getElementById('date').value),
+        endDate: new Date(document.getElementById('enddate').value)
     }
-    console.log('Date is: ', date.toDateString())
-    tripData['location'] = await getLocation(city)
-    tripData['weather'] = await getWeather(location, date)
-    tripData['picURL'] = await getPictureURL(city)
+    tripData['duration'] = daysInDates(tripData.date, tripData.endDate)
+    tripData['location'] = await getLocation(tripData.city)
+    tripData['weather'] = await getWeather(tripData.location, tripData.date)
+    tripData['picURL'] = await getPictureURL(tripData.city)
 
-    updateUI(date, city, weather, picURL)
+    updateUI(tripData)
+
 }
 
 
