@@ -112,12 +112,14 @@ function updateUI(date, city, weather, picURL) {
 * Get all the info from all the APIs
 */
 async function planTrip() {
-    const city = document.getElementById('city').value
-    const date = new Date(document.getElementById('date').value)
+    const tripData =  {
+        city: document.getElementById('city').value,
+        date: new Date(document.getElementById('date').value)
+    }
     console.log('Date is: ', date.toDateString())
-    const location = await getLocation(city)
-    const weather = await getWeather(location, date)
-    const picURL = await getPictureURL(city)
+    tripData['location'] = await getLocation(city)
+    tripData['weather'] = await getWeather(location, date)
+    tripData['picURL'] = await getPictureURL(city)
 
     updateUI(date, city, weather, picURL)
 }
