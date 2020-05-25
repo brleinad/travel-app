@@ -1,10 +1,22 @@
-# Weather-Journal App Project
+# Travel App Project
 
-## Overview
-This project requires you to create an asynchronous web app that uses Web API and user data to dynamically update the UI. 
+This is the final project for the Udacity front end nanodegree program.
+Given a city as a destination and a date the app will provide a picture of the destination and the weather forecast.
 
-## Instructions
-This will require modifying the `server.js` file and the `website/app.js` file. You can see `index.html` for element references, and once you are finished with the project steps, you can use `style.css` to style your application to customized perfection.
+This project uses 3 free APIs to get all the information
+1. [geonames](https://www.geonames.org/): For an accurate location given the user's input.
+2. [weatherbit](https://www.weatherbit.io/): For the weather once the location is set.
+3. [pixabay](https://pixabay.com/): For getting pictures for the given location.
 
-## Extras
-If you are interested in testing your code as you go, you can use `tests.js` as a template for writing and running some basic tests for your code.
+
+## Getting it up and running
+```
+npm install
+npm run build
+npm run start
+```
+
+And if you will be developing you can also do
+```
+npm run dev
+```
